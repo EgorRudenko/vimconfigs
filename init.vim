@@ -26,7 +26,7 @@ syntax on
 
 
 " let g:vimwiki_list = [{'path': '~/Documents/vimwiki/', 'syntax': 'markdown', 'ext': 'md'}]
-autocmd FileType asm :ALEDisable
+" autocmd FileType asm :ALEDisable
 
 
 call plug#begin()
