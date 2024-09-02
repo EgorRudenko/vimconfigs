@@ -1,3 +1,4 @@
+local vim = vim			-- my genious workaround my error finding engine, which threw an error on every vim usage earlier
 local lazypath = vim.fn.stdpath('data') .. '/lazy/lazy.nvim'
 local uv = vim.uv or vim.loop
 
@@ -33,9 +34,41 @@ require('lazy').setup({
   {'junegunn/fzf'},
   {'junegunn/fzf.vim'},
   {'akinsho/toggleterm.nvim', version = "*", config = true},
+  {'frabjous/knap'},
 })
 
 
+-- set shorter name for keymap function
+local kmap = vim.keymap.set
+
+-- F5 processes the document once, and refreshes the view
+kmap({ 'n', 'v', 'i' },'<F5>', function() require("knap").process_once() end)
+
+-- F6 closes the viewer application, and allows settings to be reset
+kmap({ 'n', 'v', 'i' },'<F9>', function() require("knap").close_viewer() end)
+
+-- F7 toggles the auto-processing on and off
+kmap({ 'n', 'v', 'i' },'<F7>', function() require("knap").toggle_autopreviewing() end)
+
+-- F8 invokes a SyncTeX forward search, or similar, where appropriate
+kmap({ 'n', 'v', 'i' },'<F8>', function() require("knap").forward_jump() end)
+
+
+local gknapsettings = {
+    texoutputext = "pdf",
+    textopdf = "pdflatex -synctex=1 -halt-on-error -interaction=batchmode %docroot%",
+    textopdfviewerlaunch =  "zathura --synctex-editor-command 'nvim --headless -es --cmd \"lua require('\"'\"'knaphelper'\"'\"').relayjump('\"'\"'%servername%'\"'\"','\"'\"'%{input}'\"'\"',%{line},0)\"' %outputfile%",
+    textopdfviewerrefresh = "none",
+    textopdfforwardjump = "zathura --synctex-forward=%line%:%column%:%srcfile% %outputfile%",
+    htmltohtml = "A=%outputfile% ; B=\"${A%.html}-preview.html\" ; sed 's/<\\/head>/<meta http-equiv=\"refresh\" content=\"1\" ><\\/head>/' \"$A\" > \"$B\"",
+    htmltohtmlviewerlaunch = "A=%outputfile% ; B=\"${A%.html}-preview.html\" ; firefox \"$B\"",
+    htmltohtmlviewerrefresh = "none",
+    mdtohtml = "A=%outputfile% ; B=\"${A%.html}-preview.html\" ; pandoc --standalone %docroot% -o \"$A\" && sed 's/<\\/head>/<meta http-equiv=\"refresh\" content=\"1\" ><\\/head>/' \"$A\" > \"$B\" ",
+    mdtohtmlviewerlaunch = "A=%outputfile% ; firefox \"${A%.html}-preview.html\"",
+    mdtohtmlviewerrefresh = "none",
+    delay = 100,
+}
+vim.g.knap_settings = gknapsettings
 
 
 local Terminal  = require('toggleterm.terminal').Terminal
@@ -94,7 +127,7 @@ vim.cmd('autocmd! TermOpen term://* lua set_terminal_keymaps()')
 
 
 
-
+vim.cmd("let g:livepreview_previewer = 'firefox'")
 vim.cmd('set rtp+=/usr/bin/fzf')
 vim.cmd('let g:NERDTreeWinPos = "right"')
 vim.cmd('nmap <F6> :NERDTreeToggle<CR>')
